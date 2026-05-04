@@ -25,11 +25,13 @@ def incoming_disease(rows):
 
     diagnosis_dict = {}
 
-    for disease, sympyoms, weight in rows:
+    for disease, symptoms, weight in rows:
         if disease not in diagnosis_dict:
-           diagnosis_dict[disease] = diagnosis_dict = {}
-           diagnosis_dict[disease][symptoms] = weight
-           return diagnosis_dict
+           diagnosis_dict[disease] = {}
+
+        diagnosis_dict[disease][symptoms] = weight
+
+    return diagnosis_dict
 
 
 def incoming_synonyms(rows):
@@ -40,8 +42,9 @@ def incoming_synonyms(rows):
         if symptom not in diagnosis_symptoms:
            diagnosis_symptoms[symptom] = []
 
-           diagnosis_symptoms[symptom].append(synonym)
-           return diagnosis_symptoms
+        diagnosis_symptoms[symptom].append(synonym)
+
+    return diagnosis_symptoms
 
 
 
@@ -61,7 +64,7 @@ synonyms = incoming_synonyms(mavalue2)
 user_symptoms = input("input symptoms separated by comas: ")
 user_symptoms = [symptoms.strip().lower() for symptoms in user_symptoms.split(',')]
 
-def diagnose(user_symptoms, diagnosis_symptoms):
+def diagnose(user_symptoms, diagnosis_symptoms, synonyms):
 
    highest_percentage = 0
    best_percentage = []
@@ -70,6 +73,9 @@ def diagnose(user_symptoms, diagnosis_symptoms):
 
         score = 0
         max_score = sum(symptoms.values())
+
+        if max_score == 0:
+           continue
 
         for user_symptom in user_symptoms:
 
@@ -100,6 +106,6 @@ def diagnose(user_symptoms, diagnosis_symptoms):
 
    return best_percentage,highest_percentage
 
-result = (diagnose(user_symptoms, diagnosis_symptoms))
+result = (diagnose(user_symptoms, diagnosis_symptoms, synonyms))
 print(f"you are most likely suffering from: {result}")
 
