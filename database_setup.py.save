@@ -1,0 +1,30 @@
+import sqlite3
+
+conn = sqlite.connect("diseases.db")
+cursor = conn.cursor()
+
+cursor.execute(""" CREATE TABLE IF NOT EXIST disease_symptoms (
+
+        id INTEGER PRIMARY KEY  AUTOINCREMENT,
+        disease TEXT,
+        symptom TEXT,
+        weight  INTEGER
+
+)
+""")
+
+cursor.execute(""" CREATE TABLE IF NOT EXIST symptoms_synonym (
+
+         id INTEGER PRIMARY KEY AUTOINCREMENT,
+         symptom TEXT,
+         synonym TEXT
+
+)
+""")
+
+
+cursor.executemany("INSERT INTO disease_symptoms (disease_name, symptom, weight) VALUES (?,?,?)", disease_data )
+
+cursor.executemany("INSERT INTO symptoms_synonym (symptom, )")
+
+

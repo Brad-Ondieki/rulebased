@@ -3,7 +3,24 @@ def get_data():
    conn = sqlite3.connect("database_tables_1.db")
    cursor = conn.cursor()
 
-   cursor.execute("SELECT disease, symptom, weight FROM diseases_symptoms ")
+   cursor.execute("""
+
+       SELECT
+         disease_only.disease,
+         symptoms_only.symptom,
+         disease_symptom_combo.weight
+
+       FROM disease_symptom_combo
+
+       JOIN disease_only
+       ON disease_symptom_combo.disease_id = disease_only.id
+
+       JOIN symptoms_only
+       ON disease_symptom_combo.symptoms_id = symptoms_only.id
+
+
+         """)
+
    data = cursor.fetchall()
 
    conn.close()
@@ -14,7 +31,22 @@ def get_synonyms():
     conn = sqlite3.connect("database_tables_1.db")
     cursor = conn.cursor()
 
-    cursor.execute("SELECT symptom, synonym FROM symptoms_synonym")
+    cursor.execute("""
+
+        SELECT
+        synonym_part1.Reference,
+        synonym_part2.Refered
+
+        FROM part1_part2
+        JOIN synonym_part1
+        ON part1_part2.reference_id = synonym_part1.id
+
+       JOIN synonym_part2
+       ON part1_part2.refered_id = synonym_part2.id
+
+
+
+         """)
     data2 = cursor.fetchall()
 
     conn.close()

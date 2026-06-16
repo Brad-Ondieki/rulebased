@@ -247,6 +247,154 @@ for symptoms in synonyms:
 cursor.executemany("INSERT INTO symptoms_synonym (symptom, synonym) VALUES (?,?)", symptom_data)
 
 
+disease_only_list = []
+for diseases_only in diagnosis_symptoms:
+    disease_only_list.append((diseases_only,))
+
+symptoms_only_list = []
+for diseasess, symptoms_only in diagnosis_symptoms.items():
+     for symptom_only in symptoms_only:
+          symptoms_only_list.append((symptom_only,))
+
+
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS disease_only (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    disease TEXT
+)
+""")
+
+cursor.executemany("INSERT INTO disease_only (disease) VALUES(?)", disease_only_list)
+
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS symptoms_only (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       symptom TEXT
+
+)
+""")
+
+
+cursor.executemany("INSERT INTO symptoms_only (symptom) VALUES(?)", symptoms_only_list)
+
+
+cursor.execute("SELECT id, disease FROM disease_only")
+
+disease_lookup = {}
+
+for disease_id, disease_name in cursor.fetchall():
+    disease_lookup[disease_name] = disease_id 
+
+cursor.execute("SELECT id, symptom FROM symptoms_only")
+
+symptoms_lookup = {}
+
+for symptoms_id, symptoms_name in cursor.fetchall():
+    symptoms_lookup[symptoms_name] = symptoms_id
+
+combo_data = []
+
+for disease_name in diagnosis_symptoms:
+    disease_id = disease_lookup[disease_name]
+    symptoms = diagnosis_symptoms[disease_name]
+
+    for symptoms_name in symptoms:
+        symptoms_id = symptoms_lookup[symptoms_name]
+        weight = symptoms[symptoms_name]
+
+        combo_data.append(
+                     (disease_id, symptoms_id, weight)
+
+                    )
+
+
+
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS disease_symptom_combo (
+
+           id INTEGER PRIMARY KEY AUTOINCREMENT,
+           disease_id INTEGER NOT NULL,
+           symptoms_id INTEGER NOT NULL,
+           weight INTEGER NOT NULL,
+
+          FOREIGN KEY(disease_id) REFERENCES disease(id),
+          FOREIGN KEY(symptoms_id) REFERENCES symptom(id)
+
+)
+""")
+
+cursor.executemany("INSERT INTO disease_symptom_combo (disease_id, symptoms_id, weight) VALUES(?,?,?)", combo_data)
+
+reference_holder = []
+for reference in synonyms:
+    reference_holder.append((reference,))
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS synonym_part1 (
+
+           id INTEGER PRIMARY KEY AUTOINCREMENT,
+           Reference TEXT
+
+)""")
+
+
+cursor.executemany("INSERT INTO synonym_part1 (Reference) VALUES (?)", reference_holder)
+
+refered_holder = []
+for refer, refered in synonyms.items():
+    for alternatives in refered:
+        refered_holder.append((alternatives,))
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS synonym_part2(
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Refered TEXT
+
+)""")
+
+cursor.executemany("INSERT INTO synonym_part2 (Refered) VALUES (?)", refered_holder)
+
+cursor.execute("""CREATE TABLE IF NOT EXISTS part1_part2 (
+
+           id INTEGER PRIMARY KEY AUTOINCREMENT,
+           reference_id INTEGER NOT NULL,
+           refered_id INTEGER NOT NULL,
+
+         FOREIGN KEY(reference_id) REFERENCES Reference(id)
+         FOREIGN KEY(refered_id)  REFERENCES Refered(id)
+)""")
+
+
+combo_list_synonyms = []
+cursor.execute("SELECT id, Reference FROM synonym_part1")
+
+reference_lookup = {}
+
+for ref_id, ref_name in cursor.fetchall():
+    reference_lookup[ref_name] = ref_id
+
+cursor.execute("SELECT id, Refered FROM synonym_part2")
+
+refered_lookup = {}
+
+for red_id, red_name in cursor.fetchall():
+    refered_lookup[red_name] = red_id
+
+for res_diagnosis in synonyms:
+
+     synonymsss = synonyms[res_diagnosis]
+
+     ref_id = reference_lookup[res_diagnosis]
+
+     for synonymses in synonymsss:
+         red_id = refered_lookup[synonymses]
+
+         combo_list_synonyms.append(
+
+                 (ref_id, red_id)
+               )
+
+cursor.executemany("INSERT INTO part1_part2 (reference_id, refered_id) VALUES (?,?)", combo_list_synonyms)
+
 conn.commit()
 conn.close()
-print("setup complete!")
+print("setup complete")
